@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub MCP Server 一键部署</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px 30px;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .feature-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .feature-card h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .feature-card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .feature-card li {
+            padding: 5px 0;
+            position: relative;
+            padding-left: 25px;
+        }
+        
+        .feature-card li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #48bb78;
+            font-weight: bold;
+        }
+        
+        .deploy-section {
+            background: #edf2f7;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .deploy-section h2 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+        
+        .step {
+            background: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #4299e1;
+        }
+        
+        .step h3 {
+            color: #2b6cb0;
+            margin-bottom: 10px;
+        }
+        
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 15px 0;
+            position: relative;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s;
+        }
+        
+        .copy-btn:hover {
+            background: #3182ce;
+        }
+        
+        .copy-btn.copied {
+            background: #48bb78;
+        }
+        
+        .requirements {
+            background: #fff5f5;
+            border: 1px solid #feb2b2;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        
+        .requirements h3 {
+            color: #c53030;
+            margin-bottom: 15px;
+        }
+        
+        .warning {
+            background: #fef5e7;
+            border: 1px solid #f9c74f;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .warning strong {
+            color: #f77f00;
+        }
+        
+        .success {
+            background: #f0fff4;
+            border: 1px solid #9ae6b4;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+            text-align: center;
+        }
+        
+        .success h3 {
+            color: #22543d;
+            margin-bottom: 15px;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #718096;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            color: #4299e1;
+            border-bottom-color: #4299e1;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 20px 15px;
+            }
+            
+            .features {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 GitHub MCP Server</h1>
+            <p>为AI助手提供强大的GitHub操作能力</p>
+        </header>
+        
+        <div class="content">
+            <div class="features">
+                <div class="feature-card">
+                    <h3>🔍 GitHub搜索工具</h3>
+                    <ul>
+                        <li>仓库搜索</li>
+                        <li>代码搜索</li>
+                        <li>高级过滤</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>🔄 Git操作工具</h3>
+                    <ul>
+                        <li>仓库克隆</li>
+                        <li>代码拉取</li>
+                        <li>分支管理</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>📁 文件下载工具</h3>
+                    <ul>
+                        <li>单文件下载</li>
+                        <li>仓库压缩包</li>
+                        <li>批量下载</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>🔌 API访问工具</h3>
+                    <ul>
+                        <li>仓库信息获取</li>
+                        <li>文件列表浏览</li>
+                        <li>元数据查询</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="requirements">
+                <h3>⚠️ 部署要求</h3>
+                <ul>
+                    <li>Python 3.10 或更高版本</li>
+                    <li>Git (可选，用于Git操作功能)</li>
+                    <li>网络连接 (访问GitHub API)</li>
+                    <li>Windows/Linux/macOS 操作系统</li>
+                </ul>
+            </div>
+            
+            <div class="deploy-section">
+                <h2>📦 一键部署指南</h2>
+                
+                <div class="tabs">
+                    <button class="tab active" onclick="showTab('windows')">Windows</button>
+                    <button class="tab" onclick="showTab('linux')">Linux</button>
+                    <button class="tab" onclick="showTab('macos')">macOS</button>
+                </div>
+                
+                <div id="windows" class="tab-content active">
+                    <div class="step">
+                        <h3>步骤 1: 检查Python环境</h3>
+                        <p>打开命令提示符或PowerShell，检查Python版本：</p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            py --version
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <h3>步骤 2: 下载项目文件</h3>
+                        <p>创建项目目录并下载所有必需文件：</p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            mkdir github-mcp-server
+                            cd github-mcp-server
+                            
+                            # 下载主服务器文件
+                            curl -O https://raw.githubusercontent.com/[YOUR_USERNAME]/github-mcp-server/main/github_mcp_server.py
+                            
+                            # 下载依赖文件
+                            curl -O https://raw.githubusercontent.com/[YOUR_USERNAME]/github-mcp-server/main/requirements.txt
+                            
+                            # 下载配置文件
+                            curl -O https://raw.githubusercontent.com/[YOUR_USERNAME]/github-mcp-server/main/.env.example
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <h3>步骤 3: 安装依赖</h3>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            py -m pip install -r requirements.txt
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <h3>步骤 4: 配置GitHub Token (可选)</h3>
+                        <p>为了提高API限制，建议配置GitHub Token：</p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            # 复制环境变量模板
+                            copy .env.example .env
+                            
+                            # 编辑.env文件，添加你的GitHub Token
+                            notepad .env
+                        </div>
+                        <div class="warning">
+                            <strong>注意：</strong> 在 https://github.com/settings/tokens 生成新的Personal Access Token
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <h3>步骤 5: 测试MCP服务器</h3>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            py github_mcp_server.py
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="linux" class="tab-content">
+                    <div class="step">
+                        <h3>步骤 1: 检查Python环境</h3>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            python3 --version
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <h3>步骤 2: 下载项目文件</h3>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            mkdir github-mcp-server
+                            cd github-mcp-server
+                            
+                            # 下载主服务器文件
+                            wget https://raw.githubusercontent.com/[YOUR_USERNAME]/github-mcp-server/main/github_mcp_server.py
+                            
+                            # 下载依赖文件
+                            wget https://raw.githubusercontent.com/[YOUR_USERNAME]/github-mcp-server/main/requirements.txt
+                            
+                            # 下载配置文件
+                            wget https://raw.githubusercontent.com/[YOUR_USERNAME]/github-mcp-server/main/.env.example
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <h3>步骤 3: 安装依赖</h3>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            python3 -m pip install -r requirements.txt
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <h3>步骤 4: 配置GitHub Token (可选)</h3>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            cp .env.example .env
+                            nano .env  # 编辑文件添加GitHub Token
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <h3>步骤 5: 测试MCP服务器</h3>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            python3 github_mcp_server.py
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="macos" class="tab-content">
+                    <div class="step">
+                        <h3>步骤 1: 检查Python环境</h3>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            python3 --version
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <h3>步骤 2: 下载项目文件</h3>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            mkdir github-mcp-server
+                            cd github-mcp-server
+                            
+                            # 下载主服务器文件
+                            curl -O https://raw.githubusercontent.com/[YOUR_USERNAME]/github-mcp-server/main/github_mcp_server.py
+                            
+                            # 下载依赖文件
+                            curl -O https://raw.githubusercontent.com/[YOUR_USERNAME]/github-mcp-server/main/requirements.txt
+                            
+                            # 下载配置文件
+                            curl -O https://raw.githubusercontent.com/[YOUR_USERNAME]/github-mcp-server/main/.env.example
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <h3>步骤 3: 安装依赖</h3>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            python3 -m pip install -r requirements.txt
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <h3>步骤 4: 配置GitHub Token (可选)</h3>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            cp .env.example .env
+                            open -e .env  # 使用文本编辑器编辑
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <h3>步骤 5: 测试MCP服务器</h3>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            python3 github_mcp_server.py
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="deploy-section">
+                <h2>🔧 在AI助手中使用</h2>
+                
+                <div class="step">
+                    <h3>Cursor 配置</h3>
+                    <p>在Cursor设置中添加以下MCP配置：</p>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+{
+  "mcpServers": {
+    "github-mcp": {
+      "command": "python3",
+      "args": ["/path/to/github-mcp-server/github_mcp_server.py"]
+    }
+  }
+}
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <h3>Claude Desktop 配置</h3>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+{
+  "mcpServers": {
+    "github-mcp": {
+      "command": "python3",
+      "args": ["/path/to/github-mcp-server/github_mcp_server.py"]
+    }
+  }
+}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="success">
+                <h3>🎉 部署完成！</h3>
+                <p>现在你的AI助手具备了强大的GitHub操作能力！</p>
+                <p>可以尝试让AI助手搜索仓库、下载代码、获取项目信息等操作。</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showTab(tabName) {
+            // 隐藏所有标签内容
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 移除所有标签的active类
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 显示选中的标签内容
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        function copyCode(button) {
+            const codeBlock = button.parentElement;
+            const code = codeBlock.textContent.replace('复制', '').trim();
+            
+            navigator.clipboard.writeText(code).then(() => {
+                button.textContent = '已复制!';
+                button.classList.add('copied');
+                
+                setTimeout(() => {
+                    button.textContent = '复制';
+                    button.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('复制失败:', err);
+            });
+        }
+        
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('GitHub MCP Server 部署页面已加载');
+        });
+    </script>
+</body>
+</html>
