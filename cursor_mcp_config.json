@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "github-mcp": {
+      "command": "py",
+      "args": ["D:/one/AIworker/test2/github_mcp_server.py"],
+      "description": "GitHub MCP Server - 提供GitHub搜索、Git操作、文件下载和API访问功能"
+    }
+  }
+}
